@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  MODERATOR
+  EDITOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum SeriesType {
+  MANGA
+  MANHWA
+  MANHUA
+  WEBTOON
+  OTHER
+}
+
+enum SeriesStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+  CANCELLED
+}
+
+enum Visibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum ChapterStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  UNPUBLISHED
+}
+
+enum AuthorRole {
+  AUTHOR
+  ARTIST
+}
+
+model User {
+  id                String       @id @default(cuid())
+  username          String       @unique
+  email             String       @unique
+  passwordHash      String       @map("password_hash")
+  avatarUrl         String?      @map("avatar_url")
+  role              Role         @default(USER)
+  status            UserStatus   @default(ACTIVE)
+  locale            String       @default("fr")
+  emailVerifiedAt   DateTime?    @map("email_verified_at")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  deletedAt         DateTime?    @map("deleted_at")
+
+  sessions          Session[]
+  passwordResets    PasswordReset[]
+  favorites         Favorite[]
+  progress          ReadingProgress[]
+  history           ReadingHistory[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model Series {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  title           String
+  alternativeTitles String[]    @map("alternative_titles")
+  synopsis        String?
+  coverKey        String?      @map("cover_key")
+  bannerKey       String?      @map("banner_key")
+  type            SeriesType   @default(MANGA)
+  status          SeriesStatus @default(ONGOING)
+  publicationYear Int?         @map("publication_year")
+  originalLanguage String?     @map("original_language")
+  readingDirection String      @default("ltr") @map("reading_direction")
+  visibility      Visibility   @default(PUBLIC)
+  ageRating       String?      @map("age_rating")
+  license         String?
+  provenance      String?
+  isDemo          Boolean      @default(false) @map("is_demo")
+  ratingAvg       Float        @default(0) @map("rating_avg")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  deletedAt       DateTime?    @map("deleted_at")
+
+  chapters        Chapter[]
+  seriesGenres    SeriesGenre[]
+  seriesAuthors   SeriesAuthor[]
+  favorites       Favorite[]
+  progress        ReadingProgress[]
+  history         ReadingHistory[]
+
+  @@index([status, updatedAt])
+  @@index([type])
+  @@index([isDemo])
+  @@map("series")
+}
+
+model Chapter {
+  id           String        @id @default(cuid())
+  seriesId     String        @map("series_id")
+  chapterNumber Decimal       @map("chapter_number") @db.Decimal(10, 3)
+  volumeNumber Decimal?      @map("volume_number") @db.Decimal(10, 3)
+  title        String?
+  slug         String
+  language     String        @default("fr")
+  status       ChapterStatus @default(DRAFT)
+  publishedAt  DateTime?     @map("published_at")
+  isDemo       Boolean       @default(false) @map("is_demo")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  deletedAt    DateTime?     @map("deleted_at")
+
+  series     Series         @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  pages      ChapterPage[]
+  progress   ReadingProgress[]
+  history    ReadingHistory[]
+
+  @@unique([seriesId, chapterNumber, volumeNumber, language])
+  @@index([seriesId, publishedAt])
+  @@index([status])
+  @@map("chapters")
+}
+
+model ChapterPage {
+  id         String   @id @default(cuid())
+  chapterId  String   @map("chapter_id")
+  pageNumber Int      @map("page_number")
+  storageKey String   @map("storage_key")
+  width      Int?
+  height     Int?
+  fileSize   Int?     @map("file_size")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([chapterId, pageNumber])
+  @@index([chapterId])
+  @@map("chapter_pages")
+}
+
+model Genre {
+  id     String @id @default(cuid())
+  name   String @unique
+  slug   String @unique
+  order  Int    @default(0)
+
+  seriesGenres SeriesGenre[]
+
+  @@map("genres")
+}
+
+model SeriesGenre {
+  seriesId String @map("series_id")
+  genreId  String @map("genre_id")
+
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  genre  Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([seriesId, genreId])
+  @@map("series_genres")
+}
+
+model Author {
+  id   String @id @default(cuid())
+  name String @unique
+
+  seriesAuthors SeriesAuthor[]
+
+  @@map("authors")
+}
+
+model SeriesAuthor {
+  seriesId String     @map("series_id")
+  authorId String     @map("author_id")
+  role     AuthorRole @default(AUTHOR)
+
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([seriesId, authorId, role])
+  @@map("series_authors")
+}
+
+model Favorite {
+  userId    String   @map("user_id")
+  seriesId  String   @map("series_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@id([userId, seriesId])
+  @@map("favorites")
+}
+
+model ReadingProgress {
+  userId    String   @map("user_id")
+  chapterId String   @map("chapter_id")
+  seriesId  String   @map("series_id")
+  pageNum   Int      @default(0) @map("page_num")
+  scrollPct Float    @default(0) @map("scroll_pct")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  series  Series  @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@id([userId, chapterId])
+  @@index([userId, seriesId])
+  @@map("reading_progress")
+}
+
+model ReadingHistory {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  seriesId  String   @map("series_id")
+  chapterId String   @map("chapter_id")
+  readAt    DateTime @default(now()) @map("read_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series  Series  @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, seriesId])
+  @@index([userId, readAt])
+  @@map("reading_history")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  type      String
+  payload   Json?
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?  @map("actor_id")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  meta      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
