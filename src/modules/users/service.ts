@@ -2,8 +2,22 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/auth/password";
 import { registerSchema } from "@/lib/validations/auth";
 import { AppError } from "@/lib/errors";
+import { createVerificationToken } from "@/modules/email/tokens";
+import { sendVerificationEmail } from "@/modules/email/service";
 
-export async function registerUser(input: unknown) {
+export interface RegisteredUser {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export interface RegisterResult {
+  user: RegisteredUser;
+  emailSent: boolean;
+}
+
+export async function registerUser(input: unknown): Promise<RegisterResult> {
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) {
     throw new AppError("VALIDATION_ERROR", parsed.error.issues[0].message);
@@ -21,6 +35,7 @@ export async function registerUser(input: unknown) {
   }
 
   const passwordHash = await hashPassword(password);
+  // emailVerifiedAt reste null → le compte est créé NON vérifié.
   const user = await prisma.user.create({
     data: {
       username,
@@ -30,5 +45,8 @@ export async function registerUser(input: unknown) {
     select: { id: true, username: true, email: true, role: true },
   });
 
-  return user;
+  const token = await createVerificationToken(user.id);
+  const { sent } = await sendVerificationEmail(user.email, token);
+
+  return { user, emailSent: sent };
 }

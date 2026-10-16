@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -31,18 +30,14 @@ export default function RegisterPage() {
           setError(data?.error?.message ?? "Inscription impossible.");
           return;
         }
-        // connexion automatique
-        const login = await signIn("credentials", {
-          email: payload.email,
-          password: payload.password,
-          redirect: false,
-        });
-        if (login?.error) {
-          router.push("/connecter");
-        } else {
-          router.push("/");
-          router.refresh();
-        }
+        const data = await res.json().catch(() => ({ emailSent: true }));
+        const sent = data?.emailSent ? 1 : 0;
+        router.push(
+          `/confirmation-envoyee?email=${encodeURIComponent(
+            payload.email
+          )}&sent=${sent}`
+        );
+        router.refresh();
       } catch {
         setError("Erreur réseau.");
       }

@@ -4,29 +4,50 @@ import { useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { loginAction } from "@/modules/auth/actions";
+import { ResendConfirmation } from "@/components/resend-confirmation";
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setUnverifiedEmail(null);
     const form = new FormData(e.currentTarget);
     const email = String(form.get("email") ?? "");
     const password = String(form.get("password") ?? "");
     startTransition(async () => {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (res?.error) {
-        setError("Identifiants invalides.");
-      } else {
-        router.push("/");
-        router.refresh();
+      try {
+        const check = await loginAction(email, password);
+        if (check === "unverified") {
+          setUnverifiedEmail(email);
+          return;
+        }
+        if (check === "rate_limited") {
+          setError("Trop de tentatives. Réessayez dans une minute.");
+          return;
+        }
+        if (check !== "ok") {
+          setError("Identifiants invalides.");
+          return;
+        }
+        const res = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+        if (res?.error) {
+          setError("Identifiants invalides.");
+        } else {
+          router.push("/");
+          router.refresh();
+        }
+      } catch {
+        setError("Erreur réseau.");
       }
     });
   }
@@ -44,6 +65,17 @@ export default function LoginPage() {
               {error}
             </p>
           )}
+          {unverifiedEmail && (
+            <div className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-3 text-sm text-primary">
+              <p>
+                Ton adresse e-mail n&apos;a pas encore été confirmée. Consulte
+                ta boîte de réception pour activer ton compte.
+              </p>
+              <div className="mt-3">
+                <ResendConfirmation email={unverifiedEmail} />
+              </div>
+            </div>
+          )}
           <label className="block">
             <span className="mb-1.5 block text-sm text-text-2">E-mail</span>
             <input
@@ -55,7 +87,9 @@ export default function LoginPage() {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm text-text-2">Mot de passe</span>
+            <span className="mb-1.5 block text-sm text-text-2">
+              Mot de passe
+            </span>
             <input
               name="password"
               type="password"
@@ -74,7 +108,10 @@ export default function LoginPage() {
         </form>
         <p className="mt-6 text-center text-sm text-text-2">
           Pas de compte ?{" "}
-          <Link href="/inscription" className="font-medium text-primary hover:underline">
+          <Link
+            href="/inscription"
+            className="font-medium text-primary hover:underline"
+          >
             S&apos;inscrire
           </Link>
         </p>

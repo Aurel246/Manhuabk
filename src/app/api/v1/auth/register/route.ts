@@ -29,8 +29,8 @@ export async function POST(req: Request) {
           }
         );
       }
-      const user = await registerUser(parsed);
-      return NextResponse.json({ user }, { status: 201 });
+      const { user, emailSent } = await registerUser(parsed);
+      return NextResponse.json({ user, emailSent }, { status: 201 });
     } catch (err) {
       if (isAppError(err)) {
         return NextResponse.json(

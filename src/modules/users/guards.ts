@@ -16,6 +16,8 @@ export async function getSession() {
 export async function requireUser() {
   const session = await auth();
   if (!session?.user) throw new AppError("UNAUTHORIZED");
+  // Vérification serveur : un compte non confirmé ne dispose d'aucun accès privé.
+  if (session.user.emailVerified === false) throw new AppError("UNAUTHORIZED");
   return session.user;
 }
 

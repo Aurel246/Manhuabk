@@ -49,9 +49,25 @@ Le projet est prêt pour Vercel (`vercel.json` configure `prisma migrate deploy`
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | URL publique (ex. `https://manhuabk.vercel.app`) |
 | `NEXT_PUBLIC_SITE_URL` | Même URL (SEO/canonical) |
+| `APP_URL` | URL de base des liens de confirmation (ex. `https://manhuabk.vercel.app`) |
+| `RESEND_API_KEY` | Clé API Resend (e-mail de confirmation) — voir ci-dessous |
+| `EMAIL_FROM` | Adresse d'expédition (domaine vérifié Resend) |
 | `S3_*`, `CDN_URL` | *(optionnel)* R2 pour les images — voir ci-dessous |
 
 4. **Déployer** — les migrations s'appliquent automatiquement au build.
+
+### Confirmation e-mail (Resend)
+
+Chaque nouvelle inscription doit être confirmée par e-mail avant connexion. Configuration :
+
+1. Créer un compte sur [resend.com](https://resend.com) puis une **clé API** (`RESEND_API_KEY`).
+2. **Vérifier un domaine d'envoi** (Domains → Add Domain) et configurer les enregistrements DNS (SPF/DKIM) fournis. Sans domaine vérifié, Resend n'envoie qu'à ton adresse de compte avec l'expéditeur `onboarding@resend.dev`.
+3. Définir `EMAIL_FROM` (ex. `Manhuabk <noreply@tondomaine.com>`).
+4. Ajouter `RESEND_API_KEY`, `EMAIL_FROM` et `APP_URL` dans `.env` (dev) **et** dans les *Environment Variables* Vercel (prod).
+
+> ⚠️ **Honnêteté** : sans `RESEND_API_KEY` valide, l'inscription **crée le compte mais n'envoie pas d'e-mail** (`emailSent: false`). La confirmation n'est possible qu'avec un Resend correctement configuré. Le lien de confirmation expire après **24 h** ; seuls l'empreinte SHA-256 du jeton sont stockés en base.
+
+> 🗄️ **Comptes existants** : à l'introduction de la vérification, les comptes déjà présents ont été marqués comme vérifiés (backfill) afin de ne pas verrouiller l'accès. Seules les **nouvelles** inscriptions doivent confirmer.
 
 > ⚠️ **Stockage images sur Vercel** : les fonctions serverless ont un système de fichiers **éphémère**. Le stockage local (`data/uploads/`) n'y **persiste pas** — les images importées via l'admin seront perdues. Pour un usage réel, brancher **Cloudflare R2** (voir `src/modules/storage/`) via les variables `S3_*` + `CDN_URL`. Le reste de l'app (catalogue, comptes, admin) fonctionne sans R2.
 
