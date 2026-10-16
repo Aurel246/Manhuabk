@@ -22,38 +22,39 @@ export default async function AccountPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mon compte</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight">Mon compte</h1>
         <LogoutButton />
       </div>
 
-      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+      <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold">Profil</h2>
-        <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
           <div>
             <dt className="text-text-2">Pseudo</dt>
-            <dd className="font-medium">{profile?.username}</dd>
+            <dd className="mt-0.5 font-medium">{profile?.username}</dd>
           </div>
           <div>
             <dt className="text-text-2">E-mail</dt>
-            <dd className="font-medium">{profile?.email}</dd>
+            <dd className="mt-0.5 font-medium">{profile?.email}</dd>
           </div>
           <div>
             <dt className="text-text-2">Rôle</dt>
-            <dd className="font-medium">{profile?.role}</dd>
+            <dd className="mt-0.5 font-medium">{profile?.role}</dd>
           </div>
           <div>
             <dt className="text-text-2">Inscrit le</dt>
-            <dd className="font-medium">
+            <dd className="mt-0.5 font-medium">
               {profile?.createdAt.toLocaleDateString("fr-FR")}
             </dd>
           </div>
         </dl>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">
+      <section className="mt-12">
+        <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <span className="h-5 w-1 rounded-full bg-primary" />
           Favoris ({favorites.length})
         </h2>
         {favorites.length === 0 ? (
@@ -65,7 +66,7 @@ export default async function AccountPage() {
             .
           </p>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {favorites.map((f) => (
               <SeriesCardView
                 key={f.series.id}
@@ -86,21 +87,24 @@ export default async function AccountPage() {
         )}
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Historique de lecture</h2>
+      <section className="mt-12">
+        <h2 className="flex items-center gap-2 text-xl font-bold tracking-tight">
+          <span className="h-5 w-1 rounded-full bg-primary" />
+          Historique de lecture
+        </h2>
         {history.length === 0 ? (
           <p className="mt-3 text-sm text-text-2">
             Aucune lecture pour le moment.
           </p>
         ) : (
-          <ul className="mt-4 divide-y divide-border rounded-xl border border-border text-sm">
+          <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface text-sm">
             {history.map((h) => (
               <li key={h.id}>
                 <Link
                   href={`/series/${h.series.slug}/${h.chapter.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-surface-2"
+                  className="flex items-center gap-3 px-4 py-3 transition hover:bg-surface-2"
                 >
-                  <span className="flex-1 truncate font-medium">
+                  <span className="min-w-0 flex-1 truncate font-medium">
                     {h.series.title}
                   </span>
                   <span className="font-mono text-text-2">

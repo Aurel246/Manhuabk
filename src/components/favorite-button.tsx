@@ -39,14 +39,15 @@ export function FavoriteButton({
     <button
       onClick={click}
       disabled={pending}
-      className={`rounded-lg px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
+      className={`inline-flex items-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold transition disabled:opacity-50 ${
         favorited
-          ? "bg-primary text-white"
-          : "border border-border hover:border-primary"
+          ? "bg-primary text-white shadow-lg shadow-primary/25"
+          : "border border-border-strong bg-surface text-text hover:border-primary hover:text-primary"
       }`}
       aria-pressed={favorited}
     >
-      {favorited ? "★ En favoris" : "☆ Ajouter aux favoris"}
+      <span aria-hidden="true">{favorited ? "★" : "☆"}</span>
+      {favorited ? "En favoris" : "Ajouter aux favoris"}
     </button>
   );
 }

@@ -55,20 +55,23 @@ export default async function CatalogPage({
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-bold">Catalogue</h1>
+    <div className="mx-auto max-w-7xl px-4 pb-16 pt-8">
+      <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight">
+        <span className="h-6 w-1.5 rounded-full bg-primary" />
+        Catalogue
+      </h1>
 
-      <form className="mt-6 flex flex-wrap items-center gap-3">
+      <form className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-surface p-4">
         <input
           name="q"
           defaultValue={filters.q ?? ""}
           placeholder="Rechercher…"
-          className="w-56 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+          className="w-56 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
         />
         <select
           name="type"
           defaultValue={filters.type ?? ""}
-          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text transition focus:border-primary focus:outline-none"
         >
           <option value="">Type</option>
           {TYPES.map((t) => (
@@ -80,7 +83,7 @@ export default async function CatalogPage({
         <select
           name="status"
           defaultValue={filters.status ?? ""}
-          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text transition focus:border-primary focus:outline-none"
         >
           <option value="">Statut</option>
           {STATUSES.map((s) => (
@@ -92,7 +95,7 @@ export default async function CatalogPage({
         <select
           name="genre"
           defaultValue={filters.genre ?? ""}
-          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text transition focus:border-primary focus:outline-none"
         >
           <option value="">Genre</option>
           {genres.map((g) => (
@@ -104,7 +107,7 @@ export default async function CatalogPage({
         <select
           name="sort"
           defaultValue={filters.sort}
-          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+          className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-text transition focus:border-primary focus:outline-none"
         >
           {SORTS.map((s) => (
             <option key={s.key} value={s.key}>
@@ -114,7 +117,7 @@ export default async function CatalogPage({
         </select>
         <button
           type="submit"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+          className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
         >
           Filtrer
         </button>
@@ -141,7 +144,7 @@ export default async function CatalogPage({
           {meta.page > 1 && (
             <Link
               href={`/catalogue${buildQuery(base, { page: String(meta.page - 1) })}`}
-              className="rounded-lg border border-border px-3 py-1.5 hover:border-primary"
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 transition hover:border-primary hover:text-primary"
             >
               Précédent
             </Link>
@@ -152,7 +155,7 @@ export default async function CatalogPage({
           {meta.page < meta.pages && (
             <Link
               href={`/catalogue${buildQuery(base, { page: String(meta.page + 1) })}`}
-              className="rounded-lg border border-border px-3 py-1.5 hover:border-primary"
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 transition hover:border-primary hover:text-primary"
             >
               Suivant
             </Link>
