@@ -9,6 +9,7 @@ export const SERIES_CARD_SELECT = {
   type: true,
   status: true,
   isDemo: true,
+  ratingAvg: true,
   updatedAt: true,
   chapters: {
     orderBy: { chapterNumber: "desc" as const },

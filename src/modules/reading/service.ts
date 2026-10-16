@@ -26,17 +26,18 @@ export async function listFavorites(userId: string) {
     where: { userId },
     orderBy: { createdAt: "desc" },
     include: {
-      series: {
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          coverKey: true,
-          type: true,
-          status: true,
-          isDemo: true,
+        series: {
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            coverKey: true,
+            type: true,
+            status: true,
+            isDemo: true,
+            ratingAvg: true,
+          },
         },
-      },
     },
   });
 }

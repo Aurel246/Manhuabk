@@ -78,6 +78,7 @@ export default async function AccountPage() {
                   type: f.series.type,
                   status: f.series.status,
                   isDemo: f.series.isDemo,
+                  ratingAvg: f.series.ratingAvg,
                   updatedAt: f.createdAt,
                   chapters: [],
                 }}

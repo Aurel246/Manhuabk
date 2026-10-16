@@ -6,6 +6,8 @@ import { imageUrl } from "@/lib/image-url";
 import { auth } from "@/auth";
 import { isFavorite, getSeriesResume } from "@/modules/reading/service";
 import { FavoriteButton } from "@/components/favorite-button";
+import { Cover } from "@/components/cover";
+import { Rating } from "@/components/rating";
 import { SITE_URL } from "@/lib/site";
 
 function fmtNum(n: { toString(): string } | null | undefined) {
@@ -93,21 +95,14 @@ export default async function SeriesPage({
 
       <div className="relative -mt-24 flex flex-col gap-8 sm:flex-row">
         {/* Couverture */}
-        <div className="w-40 shrink-0 overflow-hidden rounded-xl border-2 border-border-strong bg-surface-2 shadow-2xl sm:w-48">
-          {imageUrl(series.coverKey) ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageUrl(series.coverKey)!}
-              alt={`Couverture de ${series.title}`}
-              className="aspect-[2/3] w-full object-cover"
+        <div className="w-40 shrink-0 overflow-hidden rounded-xl border-2 border-border-strong shadow-2xl sm:w-48">
+          <div className="aspect-[2/3] w-full">
+            <Cover
+              title={series.title}
+              coverKey={series.coverKey}
+              className="h-full w-full"
             />
-          ) : (
-            <div className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-surface-2 to-surface-3">
-              <span className="text-5xl font-black text-primary/30">
-                {series.title.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Infos */}
@@ -115,6 +110,9 @@ export default async function SeriesPage({
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
             {series.title}
           </h1>
+          <div className="mt-2">
+            <Rating value={series.ratingAvg} size="md" />
+          </div>
           {series.alternativeTitles.length > 0 && (
             <p className="mt-1 text-sm text-text-2">
               {series.alternativeTitles.join(" · ")}
