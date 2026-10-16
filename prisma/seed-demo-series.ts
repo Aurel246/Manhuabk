@@ -218,7 +218,7 @@ async function main() {
 
     await prisma.series.upsert({
       where: { slug: s.slug },
-      update: {},
+      update: { coverKey: `https://picsum.photos/seed/${s.slug}/400/600` },
       create: {
         slug: s.slug,
         title: s.title,
@@ -231,6 +231,7 @@ async function main() {
         readingDirection: "ltr",
         isDemo: true,
         ratingAvg: s.rating,
+        coverKey: `https://picsum.photos/seed/${s.slug}/400/600`,
         license: "demo-only",
         provenance: "seed-demo",
         seriesGenres: {
